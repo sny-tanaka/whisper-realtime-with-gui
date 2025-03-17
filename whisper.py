@@ -36,6 +36,13 @@ class Whisper:
         print("リアルタイム音声認識を停止しました")
         print(f"結果は {self.output_file} に出力されています")
 
+    # サンプル音声ファイルを文字起こしする
+    def sample(self):
+        return self.__transcribe_audio(
+            audio_file="sample.mp3",
+            should_delete=False
+        )
+
     # キューから音声ファイルを取り出して文字起こしし、ファイルに書き込む
     def __put_text_transcription(self):
         # キューから音声ファイルを取得し、Whisperで文字起こし
@@ -77,11 +84,11 @@ class Whisper:
         process_thread.join()
 
     # 音声ファイルをWhisperで文字起こしする
-    def __transcribe_audio(self, audio_file):
+    def __transcribe_audio(self, audio_file, should_delete=True):
         text = mlx_whisper.transcribe(audio_file, path_or_hf_repo=self.model)["text"]
 
         # 読み取りが終わったら音声ファイルを削除
-        if os.path.exists(audio_file):
+        if should_delete and os.path.exists(audio_file):
             os.remove(audio_file)
         
         return text

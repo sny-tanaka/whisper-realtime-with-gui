@@ -9,9 +9,7 @@ class WhisperApp:
     def __init__(self):
         self.wp = None
 
-    def start(self):
-        print("起動中です。しばらくお待ち下さい。")
-
+    def setup(self):
         # .envから設定値を取得
         load_dotenv()
 
@@ -27,10 +25,26 @@ class WhisperApp:
             on_console=bool(os.environ['ON_CONSOLE']),
             model=os.environ['WHISPER_MODEL']
         )
+
+    def start(self):
+        print("起動中です。しばらくお待ち下さい。")
+
+        if self.wp is None:
+            self.setup()
+        
         self.wp.start()
 
     def stop(self):
-        self.wp.stop()
+        if self.wp is not None:
+            self.wp.stop()
+
+    def test(self):
+        if self.wp is None:
+            self.setup()
+
+        print("サンプル音声ファイルを文字起こしします")
+        text = self.wp.sample()
+        print(text)
 
     def graphics(self):
         root = tkinter.Tk()
@@ -42,6 +56,9 @@ class WhisperApp:
 
         stop_button = tkinter.Button(root, text="Stop", command=self.stop)
         stop_button.pack()
+
+        test_button = tkinter.Button(root, text="Test", command=self.test)
+        test_button.pack()
 
         root.mainloop()
 
