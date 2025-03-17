@@ -22,7 +22,11 @@ class WhisperApp:
             mic_channel=int(os.environ['AUDIO_MIC_CHANNEL']),
             speaker_channel=int(os.environ['AUDIO_SPEAKER_CHANNEL'])
         )
-        self.wp = whisper.Whisper(audio=ad, on_console=bool(os.environ['ON_CONSOLE']))
+        self.wp = whisper.Whisper(
+            audio=ad,
+            on_console=bool(os.environ['ON_CONSOLE']),
+            model=os.environ['WHISPER_MODEL']
+        )
         self.wp.start()
 
     def stop(self):

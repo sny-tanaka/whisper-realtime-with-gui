@@ -7,12 +7,13 @@ import queue
 import audio
 
 class Whisper:
-    def __init__(self, audio: audio.Audio, on_console):
+    def __init__(self, audio: audio.Audio, on_console, model):
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self.__realtime_transcription)
         self.audio_queue = queue.Queue()
         self.audio = audio
         self.on_console = on_console
+        self.model = model
 
         # 起動時の日時を取得してファイル名にする（yyyymmddhhMMss）
         start_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -77,7 +78,7 @@ class Whisper:
 
     # 音声ファイルをWhisperで文字起こしする
     def __transcribe_audio(self, audio_file):
-        text = mlx_whisper.transcribe(audio_file, path_or_hf_repo="mlx-community/whisper-turbo")["text"]
+        text = mlx_whisper.transcribe(audio_file, path_or_hf_repo=self.model)["text"]
 
         # 読み取りが終わったら音声ファイルを削除
         if os.path.exists(audio_file):

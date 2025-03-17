@@ -22,7 +22,9 @@ Create "機器セット" like this screenshot.
 ```sh
 cp .env.sample .env
 ```
-Put your audio device name to .env
+Put your audio device name to .env  
+You can change whisper model `WHISPER_MODEL`.
+[Usable list](https://huggingface.co/collections/mlx-community/whisper-663256f9964fbb1177db93dc)
 
 ## Start
 ```sh
