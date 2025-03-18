@@ -6,16 +6,27 @@
     <title>リアルタイム音声文字起こし</title>
     <script>
         async function start() {
-            let res = await pywebview.api.start();
+            const res = await pywebview.api.start();
         }
         async function stop() {
-            let res = await pywebview.api.stop();
+            const res = await pywebview.api.stop();
         }
         async function pause() {
-            let res = await pywebview.api.pause();
+            const res = await pywebview.api.pause();
         }
         async function test() {
-            let res = await pywebview.api.test();
+            const res = await pywebview.api.test();
+        }
+        async function loadSettings() {
+            const res = await pywebview.api.load_settings();
+            console.log("loadSettings", res);
+            document.getElementById('model').value = res.whisper_model;
+            document.getElementById('device').value = res.audio_device_name;
+        }
+        async function saveSettings() {
+            const whisper_model = document.getElementById('model').value;
+            const audio_device_name = document.getElementById('device').value;
+            const res = await pywebview.api.save_settings(whisper_model, audio_device_name);
         }
     </script>
     <style>
@@ -51,6 +62,13 @@
                 padding: 8px;
             }
 
+            .settings_header {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
             .settings {
                 display: flex;
                 flex-direction: column;
@@ -63,21 +81,22 @@
                 }
             }
 
+            button {
+                width: 100px;
+                height: 40px;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 4px;
+            }
+
             .buttons {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
                 justify-content: space-between;
                 gap: 8px;
-
-                button {
-                    width: 100px;
-                    height: 40px;
-                    border: none;
-                    cursor: pointer;
-                    font-weight: bold;
-                    border-radius: 4px;
-                }
 
                 .start {
                     background-color: #4CAF50;
@@ -107,25 +126,29 @@
     <main>
         <div class="text_container">
             <textarea name="text" id="text" readonly>
-                ここに文字が表示されます
+                コンソールの代わりにここに文字が表示されるようになる予定です
             </textarea>
         </div>
         <div class="vertical">
             <div>
-                <h2>設定</h2>
+                <div class="settings_header">
+                    <h2>設定</h2>
+                    <button class="load_settings_button" onclick="loadSettings()">読み込み</button>
+                </div>
                 <ul class="settings">
                     <li>
                         <label for="model">モデル</label>
-                        <select name="model" id="model">
+                        <select name="model" id="model" onchange="saveSettings()">
                             <option value="mlx-community/whisper-turbo">mlx-community/whisper-turbo</option>
                             <option value="mlx-community/whisper-large-v3-turbo">mlx-community/whisper-large-v3-turbo</option>
                         </select>
                     </li>
                     <li>
                         <label for="device">Audio デバイス名</label>
-                        <input type="text" name="device" id="device">
+                        <input type="text" name="device" id="device" onchange="saveSettings()" />
                     </li>
                 </ul>
+                
             </div>
             <div class="buttons">
                 <button class="start" onclick="start()">開始</button>

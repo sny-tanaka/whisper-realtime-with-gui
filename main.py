@@ -1,5 +1,4 @@
-from dotenv import load_dotenv
-import os
+import json
 import webview
 
 import audio
@@ -11,31 +10,25 @@ class WhisperApp:
         self.wp = None
         self.llm = None
 
-    def setup(self):
-        # .envから設定値を取得
-        load_dotenv()
-
-        ad = audio.Audio(
-            device_name=os.environ['AUDIO_DEVICE_NAME'],
-            duration=int(os.environ['AUDIO_DURATION']),
-            sample_rate=int(os.environ['AUDIO_SAMPLE_RATE']),
-            mic_channel=int(os.environ['AUDIO_MIC_CHANNEL']),
-            speaker_channel=int(os.environ['AUDIO_SPEAKER_CHANNEL'])
-        )
-        self.wp = whisper.Whisper(
-            audio=ad,
-            on_console=bool(os.environ['ON_CONSOLE']),
-            model=os.environ['WHISPER_MODEL']
-        )
-
-    def setup_llm(self):
-        self.llm = llm.LLM(model="llama-3-elyza-8b")
-
+    def load_settings(self):
+        # settings.jsonから設定を読み込む
+        with open("settings.json", "r") as f:
+            return json.load(f)
+        
+    def save_settings(self, whisper_model, audio_device_name):
+        settings = {
+            "whisper_model": whisper_model,
+            "audio_device_name": audio_device_name
+        }
+        # settings.jsonに設定を保存
+        with open("settings.json", "w") as f:
+            json.dump(settings, f, indent=4)
+    
     def start(self):
         print("起動中です。しばらくお待ち下さい。")
 
         if self.wp is None:
-            self.setup()
+            self.__setup()
         
         self.wp.start()
 
@@ -49,7 +42,7 @@ class WhisperApp:
 
     def test(self):
         if self.wp is None:
-            self.setup()
+            self.__setup()
 
         print("サンプル音声ファイルを文字起こしします")
         text = self.wp.sample()
@@ -59,7 +52,7 @@ class WhisperApp:
     # まともに要約してくれないので今は使うべきでない
     def summarize(self):
         if self.llm is None:
-            self.setup_llm()
+            self.__setup_llm()
         print("要約を生成します")
         role_prompt = "ユーザから与えられたミーティングの文字起こしデータをもとに、その議事録を作成してください。文字起こしの性質上、誤った文字になっていたり、関係ない音を文字起こししてしまっている可能性がありますが、文脈から推測してください。"
         output_format_prompt = "議事録はマークダウンで出力してください。文字起こしデータに登場するすべての議題を含めてください。省略はしないでください。"
@@ -79,9 +72,6 @@ class WhisperApp:
             f.write(result)
         print("要約が生成されました")
 
-    def text(self, text):
-        return text
-
     def graphics(self):
         window = webview.create_window(
             title="リアルタイム音声文字起こし",
@@ -89,6 +79,23 @@ class WhisperApp:
             js_api=self
         )
         webview.start()
+
+    def __setup(self):
+        settings = self.load_settings()
+        ad = audio.Audio(
+            device_name=settings['audio_device_name'],
+            duration=10,
+            sample_rate=16000,
+            mic_channel=2,
+            speaker_channel=0
+        )
+        self.wp = whisper.Whisper(
+            audio=ad,
+            model=settings['whisper_model']
+        )
+
+    def __setup_llm(self):
+        self.llm = llm.LLM(model="llama-3-elyza-8b")
 
 def main():
     app = WhisperApp()

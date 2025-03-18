@@ -7,12 +7,11 @@ import queue
 import audio
 
 class Whisper:
-    def __init__(self, audio: audio.Audio, on_console, model):
+    def __init__(self, audio: audio.Audio, model):
         self.stop_event = None
         self.thread = None
         self.audio_queue = queue.Queue()
         self.audio = audio
-        self.on_console = on_console
         self.model = model
         self.finished = False
         self.__set_output_file()
@@ -48,10 +47,16 @@ class Whisper:
 
     # サンプル音声ファイルを文字起こしする
     def sample(self):
+        print("これはテストです。正しく音声認識ができているかを確認しています。")
+        print("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
         return self.__transcribe_audio(
             audio_file="sample.mp3",
             should_delete=False
         )
+    
+    # 起動中かどうかを返す
+    def is_running(self):
+        return self.thread is not None and self.thread.is_alive()
     
     # スレッドを立て直す
     def __start_main_thread(self):
@@ -70,8 +75,7 @@ class Whisper:
         audio_file = self.audio_queue.get(timeout=1)
         text = self.__transcribe_audio(audio_file)
 
-        if self.on_console:
-            print(text)
+        print(text)
 
         # テキストをファイルに改行区切りで書き込み
         with open(self.output_file, 'a', encoding='utf-8') as f:
