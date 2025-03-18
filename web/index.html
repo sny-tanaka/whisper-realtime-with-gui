@@ -11,11 +11,11 @@
         async function stop() {
             let res = await pywebview.api.stop();
         }
+        async function pause() {
+            let res = await pywebview.api.pause();
+        }
         async function test() {
             let res = await pywebview.api.test();
-        }
-        async function summarize() {
-            let res = await pywebview.api.summarize();
         }
     </script>
     <style>
@@ -30,20 +30,74 @@
                 height: 100%;
             }
 
+            .text_container {
+                flex: 1;
+            }
+
             .vertical {
                 display: flex;
                 flex-direction: column;
                 align-items: space-between;
                 justify-content: space-between;
+                width: 400px;
                 height: 100%;
             }
 
             #text {
-                width: 600px;
+                width: 90%;
                 height: 100%;
                 background-color: #2b2b2b;
                 color: white;
                 padding: 8px;
+            }
+
+            .settings {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+                justify-content: center;
+                gap: 4px;
+
+                li {
+                    list-style: none;
+                }
+            }
+
+            .buttons {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+
+                button {
+                    width: 100px;
+                    height: 40px;
+                    border: none;
+                    cursor: pointer;
+                    font-weight: bold;
+                    border-radius: 4px;
+                }
+
+                .start {
+                    background-color: #4CAF50;
+                    color: white;
+                }
+
+                .stop {
+                    background-color: #f44336;
+                    color: white;
+                }
+
+                .pause {
+                    background-color: #FFC107;
+                    color: white;
+                }
+
+                .test {
+                    background-color: #2196F3;
+                    color: white;
+                }
             }
         }
     </style>
@@ -51,7 +105,7 @@
 <body>
     <h1>リアルタイム音声文字起こし</h1>
     <main>
-        <div>
+        <div class="text_container">
             <textarea name="text" id="text" readonly>
                 ここに文字が表示されます
             </textarea>
@@ -59,7 +113,7 @@
         <div class="vertical">
             <div>
                 <h2>設定</h2>
-                <ul>
+                <ul class="settings">
                     <li>
                         <label for="model">モデル</label>
                         <select name="model" id="model">
@@ -67,13 +121,17 @@
                             <option value="mlx-community/whisper-large-v3-turbo">mlx-community/whisper-large-v3-turbo</option>
                         </select>
                     </li>
+                    <li>
+                        <label for="device">Audio デバイス名</label>
+                        <input type="text" name="device" id="device">
+                    </li>
                 </ul>
             </div>
-            <div>
-                <button onclick="start()">start</button>
-                <button onclick="stop()">stop</button>
-                <button onclick="test()">test</button>
-                <button onclick="summarize()">summarize</button>
+            <div class="buttons">
+                <button class="start" onclick="start()">開始</button>
+                <button class="stop" onclick="stop()">停止</button>
+                <button class="pause" onclick="pause()">一時停止</button>
+                <button class="test" onclick="test()">テスト</button>
             </div>
         </div>
     </main>

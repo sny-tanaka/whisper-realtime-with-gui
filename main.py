@@ -43,6 +43,10 @@ class WhisperApp:
         if self.wp is not None:
             self.wp.stop()
 
+    def pause(self):
+        if self.wp is not None:
+            self.wp.pause()
+
     def test(self):
         if self.wp is None:
             self.setup()

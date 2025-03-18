@@ -14,13 +14,14 @@ class Whisper:
         self.audio = audio
         self.on_console = on_console
         self.model = model
-
-        # 起動時の日時を取得してファイル名にする（yyyymmddhhMMss）
-        start_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-        self.output_file = os.path.join("./output", f'{start_time}.txt')
+        self.finished = False
+        self.__set_output_file()
 
     # リアルタイム音声認識を開始する
     def start(self):
+        if self.finished:
+            self.__set_output_file()
+            self.finished = False
         self.__start_main_thread()
         print("リアルタイム音声認識を開始しました")
         print(f"結果は {self.output_file} に出力されます")
@@ -36,6 +37,15 @@ class Whisper:
         print("リアルタイム音声認識を停止しました")
         print(f"結果は {self.output_file} に出力されています")
 
+        self.finished = True
+
+    # リアルタイム音声認識を一時停止する
+    def pause(self):
+        print("リアルタイム音声認識を一時停止します。")
+        self.stop_event.set()
+        self.thread.join()
+        print("リアルタイム音声認識を一時停止しました")
+
     # サンプル音声ファイルを文字起こしする
     def sample(self):
         return self.__transcribe_audio(
@@ -48,6 +58,11 @@ class Whisper:
         self.stop_event = threading.Event()
         self.thread = threading.Thread(target=self.__realtime_transcription)
         self.thread.start()
+
+    # 出力ファイル名を設定する
+    def __set_output_file(self):
+        start_time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        self.output_file = os.path.join("./output", f'{start_time}.txt')
 
     # キューから音声ファイルを取り出して文字起こしし、ファイルに書き込む
     def __put_text_transcription(self):
