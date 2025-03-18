@@ -8,8 +8,8 @@ import audio
 
 class Whisper:
     def __init__(self, audio: audio.Audio, on_console, model):
-        self.stop_event = threading.Event()
-        self.thread = threading.Thread(target=self.__realtime_transcription)
+        self.stop_event = None
+        self.thread = None
         self.audio_queue = queue.Queue()
         self.audio = audio
         self.on_console = on_console
@@ -21,7 +21,7 @@ class Whisper:
 
     # リアルタイム音声認識を開始する
     def start(self):
-        self.thread.start()
+        self.__start_main_thread()
         print("リアルタイム音声認識を開始しました")
         print(f"結果は {self.output_file} に出力されます")
 
@@ -42,6 +42,12 @@ class Whisper:
             audio_file="sample.mp3",
             should_delete=False
         )
+    
+    # スレッドを立て直す
+    def __start_main_thread(self):
+        self.stop_event = threading.Event()
+        self.thread = threading.Thread(target=self.__realtime_transcription)
+        self.thread.start()
 
     # キューから音声ファイルを取り出して文字起こしし、ファイルに書き込む
     def __put_text_transcription(self):

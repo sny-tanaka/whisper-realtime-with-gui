@@ -5,12 +5,19 @@ refs: https://github.com/openai/whisper
 ## Install
 Assuming Python 3.9.9 is installed.
 ```sh
-brew install python-tk@3.9 # for GUI
 brew install ffmpeg # requires by whisper
 brew install blackhole-2ch # combine mic and speaker
 # You must reboot for the installation of blackhole-2ch to take effect.
 brew install pipenv
 pipenv install
+```
+
+### beta
+You should setup ollama if you want to summarize.
+```sh
+brew install ollama # for summarize
+ollama serve
+ollama pull gemma3
 ```
 
 ## Settings

@@ -1,13 +1,15 @@
 from dotenv import load_dotenv
 import os
-import tkinter
+import webview
 
 import audio
+import llm
 import whisper
 
 class WhisperApp:
     def __init__(self):
         self.wp = None
+        self.llm = None
 
     def setup(self):
         # .envから設定値を取得
@@ -25,6 +27,9 @@ class WhisperApp:
             on_console=bool(os.environ['ON_CONSOLE']),
             model=os.environ['WHISPER_MODEL']
         )
+
+    def setup_llm(self):
+        self.llm = llm.LLM(model="llama-3-elyza-8b")
 
     def start(self):
         print("起動中です。しばらくお待ち下さい。")
@@ -46,21 +51,40 @@ class WhisperApp:
         text = self.wp.sample()
         print(text)
 
+    # 調整中
+    # まともに要約してくれないので今は使うべきでない
+    def summarize(self):
+        if self.llm is None:
+            self.setup_llm()
+        print("要約を生成します")
+        role_prompt = "ユーザから与えられたミーティングの文字起こしデータをもとに、その議事録を作成してください。文字起こしの性質上、誤った文字になっていたり、関係ない音を文字起こししてしまっている可能性がありますが、文脈から推測してください。"
+        output_format_prompt = "議事録はマークダウンで出力してください。文字起こしデータに登場するすべての議題を含めてください。省略はしないでください。"
+        human_prompt = "ひとつ前の投稿がミーティングの文字起こしデータです。リリースが何件あったかなど読み取ってまとめてください。"
+        transcribed_text = ""
+        file_name = ""
+        with open(f"output/{file_name}.txt", "r") as f:
+            transcribed_text = f.read()
+        result = self.llm.generate([
+            llm.LLM.create_message("system", role_prompt),
+            llm.LLM.create_message("system", output_format_prompt),
+            llm.LLM.create_message("human", transcribed_text),
+            llm.LLM.create_message("human", human_prompt),
+        ])
+        # ファイルに書き込む
+        with open(f"output/{file_name}.md", "w") as f:
+            f.write(result)
+        print("要約が生成されました")
+
+    def text(self, text):
+        return text
+
     def graphics(self):
-        root = tkinter.Tk()
-        root.title("リアルタイム音声文字起こし")
-        root.geometry("200x100")
-
-        start_button = tkinter.Button(root, text="Start", command=self.start)
-        start_button.pack()
-
-        stop_button = tkinter.Button(root, text="Stop", command=self.stop)
-        stop_button.pack()
-
-        test_button = tkinter.Button(root, text="Test", command=self.test)
-        test_button.pack()
-
-        root.mainloop()
+        window = webview.create_window(
+            title="リアルタイム音声文字起こし",
+            url="web/index.html",
+            js_api=self
+        )
+        webview.start()
 
 def main():
     app = WhisperApp()
