@@ -78,7 +78,7 @@ class WhisperApp:
         self.logger.write("要約が生成されました")
 
     def graphics(self):
-        window = webview.create_window(
+        webview.create_window(
             title="リアルタイム音声文字起こし",
             url="web/index.html",
             js_api=self
