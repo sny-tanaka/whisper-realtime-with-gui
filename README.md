@@ -4,6 +4,7 @@ refs: https://github.com/openai/whisper
 
 ## Install
 Assuming Python 3.9.9 is installed.
+You can execute `setup.command`.
 ```sh
 brew install ffmpeg # requires by whisper
 brew install blackhole-2ch # combine mic and speaker
@@ -26,6 +27,7 @@ Create "機器セット" like this screenshot.
 ![MIDI Settings Screenshot](midi.png)
 
 ## Start
+You can execute `start.command`.
 ```sh
 pipenv run python main.py
 # A GUI with “Start” and “Stop” buttons will launch.
