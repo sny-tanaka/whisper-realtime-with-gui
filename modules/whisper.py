@@ -4,10 +4,12 @@ import os
 import threading
 import queue
 
-import audio
+import modules.audio as audio
+import modules.logger as logger
 
 class Whisper:
-    def __init__(self, audio: audio.Audio, model):
+    def __init__(self, logger: logger.Logger, audio: audio.Audio, model):
+        self.logger = logger
         self.stop_event = None
         self.thread = None
         self.audio_queue = queue.Queue()
@@ -22,33 +24,33 @@ class Whisper:
             self.__set_output_file()
             self.finished = False
         self.__start_main_thread()
-        print("リアルタイム音声認識を開始しました")
-        print(f"結果は {self.output_file} に出力されます")
+        self.logger.write("リアルタイム音声認識を開始しました")
+        self.logger.write(f"結果は {self.output_file} に出力されます")
 
     # リアルタイム音声認識を停止する
     def stop(self):
-        print("リアルタイム音声認識を停止します。しばらくお待ち下さい。")
+        self.logger.write("リアルタイム音声認識を停止します。しばらくお待ち下さい。")
         self.stop_event.set()
         self.thread.join()
         # 録音されたものがまだ残っている場合は処理する
         while not self.audio_queue.empty():
             self.__put_text_transcription()
-        print("リアルタイム音声認識を停止しました")
-        print(f"結果は {self.output_file} に出力されています")
+        self.logger.write("リアルタイム音声認識を停止しました")
+        self.logger.write(f"結果は {self.output_file} に出力されています")
 
         self.finished = True
 
     # リアルタイム音声認識を一時停止する
     def pause(self):
-        print("リアルタイム音声認識を一時停止します。")
+        self.logger.write("リアルタイム音声認識を一時停止します。")
         self.stop_event.set()
         self.thread.join()
-        print("リアルタイム音声認識を一時停止しました")
+        self.logger.write("リアルタイム音声認識を一時停止しました")
 
     # サンプル音声ファイルを文字起こしする
     def sample(self):
-        print("これはテストです。正しく音声認識ができているかを確認しています。")
-        print("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
+        self.logger.write("これはテストです。正しく音声認識ができているかを確認しています。")
+        self.logger.write("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
         return self.__transcribe_audio(
             audio_file="sample.mp3",
             should_delete=False
@@ -75,7 +77,7 @@ class Whisper:
         audio_file = self.audio_queue.get(timeout=1)
         text = self.__transcribe_audio(audio_file)
 
-        print(text)
+        self.logger.write(text)
 
         # テキストをファイルに改行区切りで書き込み
         with open(self.output_file, 'a', encoding='utf-8') as f:

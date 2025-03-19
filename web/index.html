@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>リアルタイム音声文字起こし</title>
     <script>
+        function pollingLogs() {
+            const intervalId = setInterval(async () => {
+                const res = await pywebview.api.get_logs();
+                for (const log of res) {
+                    document.getElementById('text').value += log + '\n';
+                }
+            }, 1000);
+        }
         async function start() {
             const res = await pywebview.api.start();
         }
@@ -28,6 +36,19 @@
             const audio_device_name = document.getElementById('device').value;
             const res = await pywebview.api.save_settings(whisper_model, audio_device_name);
         }
+        function firstLoad() {
+            // 設定が正常に読み込めるまでポーリング
+            const intervalId = setInterval(async () => {
+                const res = await pywebview.api.load_settings();
+                if (res) {
+                    document.getElementById('model').value = res.whisper_model;
+                    document.getElementById('device').value = res.audio_device_name;
+                    clearInterval(intervalId);
+                }
+            }, 100);
+        }
+        firstLoad();
+        pollingLogs();
     </script>
     <style>
         main {
@@ -43,6 +64,7 @@
 
             .text_container {
                 flex: 1;
+                padding-right: 32px;
             }
 
             .vertical {
@@ -55,11 +77,13 @@
             }
 
             #text {
-                width: 90%;
+                width: 100%;
                 height: 100%;
                 background-color: #2b2b2b;
                 color: white;
                 padding: 8px;
+                overflow-y: scroll;
+                font-size: 16px;
             }
 
             .settings_header {
@@ -125,9 +149,7 @@
     <h1>リアルタイム音声文字起こし</h1>
     <main>
         <div class="text_container">
-            <textarea name="text" id="text" readonly>
-                コンソールの代わりにここに文字が表示されるようになる予定です
-            </textarea>
+            <textarea name="text" id="text" readonly></textarea>
         </div>
         <div class="vertical">
             <div>

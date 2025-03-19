@@ -25,18 +25,9 @@ ollama pull gemma3
 Create "機器セット" like this screenshot.
 ![MIDI Settings Screenshot](midi.png)
 
-### create .env
-```sh
-cp .env.sample .env
-```
-Put your audio device name to .env  
-You can change whisper model `WHISPER_MODEL`.
-[Usable list](https://huggingface.co/collections/mlx-community/whisper-663256f9964fbb1177db93dc)
-
 ## Start
 ```sh
-pipenv shell
-python main.py
+pipenv run python main.py
 # A GUI with “Start” and “Stop” buttons will launch.
 # Pressing “Start” begins voice recognition, and pressing “Stop” stops it.
 # First time, you need to download whisper model.
