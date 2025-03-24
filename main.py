@@ -2,7 +2,6 @@ import json
 import webview
 
 import modules.audio as audio
-import modules.llm as llm
 import modules.logger as logger
 import modules.whisper as whisper
 
@@ -10,7 +9,6 @@ class WhisperApp:
     def __init__(self):
         self.logger = logger.Logger()
         self.wp = None
-        self.llm = None
 
     def get_logs(self):
         return self.logger.pick()
@@ -53,30 +51,6 @@ class WhisperApp:
         text = self.wp.sample()
         self.logger.write(text)
 
-    # 調整中
-    # まともに要約してくれないので今は使うべきでない
-    def summarize(self):
-        if self.llm is None:
-            self.__setup_llm()
-        self.logger.write("要約を生成します")
-        role_prompt = "ユーザから与えられたミーティングの文字起こしデータをもとに、その議事録を作成してください。文字起こしの性質上、誤った文字になっていたり、関係ない音を文字起こししてしまっている可能性がありますが、文脈から推測してください。"
-        output_format_prompt = "議事録はマークダウンで出力してください。文字起こしデータに登場するすべての議題を含めてください。省略はしないでください。"
-        human_prompt = "ひとつ前の投稿がミーティングの文字起こしデータです。リリースが何件あったかなど読み取ってまとめてください。"
-        transcribed_text = ""
-        file_name = ""
-        with open(f"output/{file_name}.txt", "r") as f:
-            transcribed_text = f.read()
-        result = self.llm.generate([
-            llm.LLM.create_message("system", role_prompt),
-            llm.LLM.create_message("system", output_format_prompt),
-            llm.LLM.create_message("human", transcribed_text),
-            llm.LLM.create_message("human", human_prompt),
-        ])
-        # ファイルに書き込む
-        with open(f"output/{file_name}.md", "w") as f:
-            f.write(result)
-        self.logger.write("要約が生成されました")
-
     def graphics(self):
         webview.create_window(
             title="リアルタイム音声文字起こし",
@@ -99,9 +73,6 @@ class WhisperApp:
             audio=ad,
             model=settings['whisper_model']
         )
-
-    def __setup_llm(self):
-        self.llm = llm.LLM(model="llama-3-elyza-8b")
 
 def main():
     app = WhisperApp()
