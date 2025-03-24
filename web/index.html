@@ -8,8 +8,15 @@
         function pollingLogs() {
             const intervalId = setInterval(async () => {
                 const res = await pywebview.api.get_logs();
+                // スクロールが一番下になっているかどうか
+                const txt = document.getElementById('text');
+                const isScrollBottom = txt.scrollHeight - txt.clientHeight <= txt.scrollTop + 1;
                 for (const log of res) {
-                    document.getElementById('text').value += log + '\n';
+                    txt.value += log + '\n';
+                }
+                // スクロールが一番下になっている場合は自動スクロール
+                if (isScrollBottom) {
+                    txt.scrollTop = txt.scrollHeight;
                 }
             }, 1000);
         }
