@@ -12,8 +12,6 @@ mlx-whisper = "*"
 pydub = "*"
 librosa = "*"
 pywebview = "*"
-langchain-community = "*"
-langchain-ollama = "*"
 
 [dev-packages]
 
