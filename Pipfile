@@ -9,8 +9,6 @@ ffmpeg-python = "*"
 sounddevice = "*"
 scipy = "*"
 mlx-whisper = "*"
-pydub = "*"
-librosa = "*"
 pywebview = "*"
 
 [dev-packages]
