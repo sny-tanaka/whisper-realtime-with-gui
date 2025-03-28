@@ -69,7 +69,6 @@ class WhisperApp:
         )
         di = diarization.Diarization(
             speaker_count=2,
-            token=""
         )
         self.wp = whisper.Whisper(
             model=settings['whisper_model'],

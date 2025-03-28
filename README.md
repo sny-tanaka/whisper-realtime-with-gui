@@ -5,7 +5,11 @@ refs: https://github.com/openai/whisper
 ## Hugging Face
 This app requires access token of Hugging Face.
 https://huggingface.co/pyannote/speaker-diarization
+https://huggingface.co/pyannote/segmentation
 https://huggingface.co/settings/tokens
+
+### Offline
+refs: https://dev.classmethod.jp/articles/pyannote-audio-offline/
 
 ## Install
 Assuming Python 3.9.9 is installed.

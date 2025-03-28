@@ -54,10 +54,11 @@ class Whisper:
         self.logger.write("これはテストです。正しく音声認識ができているかを確認しています。")
         self.logger.write("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
 
-        for waveform, speaker in self.diarization.generate("cut.wav"):
+        for waveform, speaker in self.diarization.generate("sample.mp3"):
             text = self.__transcribe_audio(waveform, should_delete=False)
             formatted = f"({speaker}) {text}"
             self.logger.write(formatted)
+        self.logger.write("サンプル音声の文字起こしが完了しました。")
     
     # 起動中かどうかを返す
     def is_running(self):

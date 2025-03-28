@@ -1,0 +1,3 @@
+# gitignore以外はすべて無視
+*
+!.gitignore
