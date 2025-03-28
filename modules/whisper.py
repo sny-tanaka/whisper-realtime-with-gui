@@ -5,10 +5,11 @@ import threading
 import queue
 
 import modules.audio as audio
+import modules.diarization as diarization
 import modules.logger as logger
 
 class Whisper:
-    def __init__(self, logger: logger.Logger, audio: audio.Audio, model):
+    def __init__(self, model, logger: logger.Logger, audio: audio.Audio, diarization: diarization.Diarization):
         self.logger = logger
         self.stop_event = None
         self.thread = None
@@ -16,6 +17,7 @@ class Whisper:
         self.audio = audio
         self.model = model
         self.finished = False
+        self.diarization = diarization
         self.__set_output_file()
 
     # リアルタイム音声認識を開始する
@@ -51,10 +53,11 @@ class Whisper:
     def sample(self):
         self.logger.write("これはテストです。正しく音声認識ができているかを確認しています。")
         self.logger.write("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
-        return self.__transcribe_audio(
-            audio_file="sample.mp3",
-            should_delete=False
-        )
+
+        for waveform, speaker in self.diarization.generate("cut.wav"):
+            text = self.__transcribe_audio(waveform, should_delete=False)
+            formatted = f"({speaker}) {text}"
+            self.logger.write(formatted)
     
     # 起動中かどうかを返す
     def is_running(self):
@@ -75,13 +78,16 @@ class Whisper:
     def __put_text_transcription(self):
         # キューから音声ファイルを取得し、Whisperで文字起こし
         audio_file = self.audio_queue.get(timeout=1)
-        text = self.__transcribe_audio(audio_file)
+        
+        # 話者分離
+        for waveform, speaker in self.diarization.generate(audio_file):
+            text = self.__transcribe_audio(waveform)
+            formatted = f"({speaker}) {text}"
+            self.logger.write(formatted)
 
-        self.logger.write(text)
-
-        # テキストをファイルに改行区切りで書き込み
-        with open(self.output_file, 'a', encoding='utf-8') as f:
-            f.write(text + '\n')
+            # テキストをファイルに改行区切りで書き込み
+            with open(self.output_file, 'a', encoding='utf-8') as f:
+                f.write(formatted + '\n')
 
     # 音声を録音してファイルを次々と作成し、キューに追加していく
     def __capture_audio(self):

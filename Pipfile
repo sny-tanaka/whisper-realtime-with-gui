@@ -10,6 +10,7 @@ sounddevice = "*"
 scipy = "*"
 mlx-whisper = "*"
 pywebview = "*"
+"pyannote.audio" = "*"
 
 [dev-packages]
 

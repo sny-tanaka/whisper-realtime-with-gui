@@ -2,6 +2,11 @@
 
 refs: https://github.com/openai/whisper
 
+## Hugging Face
+This app requires access token of Hugging Face.
+https://huggingface.co/pyannote/speaker-diarization
+https://huggingface.co/settings/tokens
+
 ## Install
 Assuming Python 3.9.9 is installed.
 You can execute `setup.command`.

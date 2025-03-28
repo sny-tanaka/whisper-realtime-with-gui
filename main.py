@@ -2,6 +2,7 @@ import json
 import webview
 
 import modules.audio as audio
+import modules.diarization as diarization
 import modules.logger as logger
 import modules.whisper as whisper
 
@@ -47,9 +48,7 @@ class WhisperApp:
         if self.wp is None:
             self.__setup()
 
-        self.logger.write("サンプル音声ファイルを文字起こしします")
-        text = self.wp.sample()
-        self.logger.write(text)
+        self.wp.sample()
 
     def graphics(self):
         webview.create_window(
@@ -68,10 +67,15 @@ class WhisperApp:
             mic_channel=2,
             speaker_channel=0
         )
+        di = diarization.Diarization(
+            speaker_count=2,
+            token=""
+        )
         self.wp = whisper.Whisper(
+            model=settings['whisper_model'],
             logger=self.logger,
             audio=ad,
-            model=settings['whisper_model']
+            diarization=di
         )
 
 def main():
