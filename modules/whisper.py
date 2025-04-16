@@ -1,5 +1,6 @@
 import datetime
 import mlx_whisper
+import numpy as np
 import os
 import threading
 import queue
@@ -54,10 +55,8 @@ class Whisper:
         self.logger.write("これはテストです。正しく音声認識ができているかを確認しています。")
         self.logger.write("という合成音声の文字起こしを行います。このあとに文字起こしの結果が表示されます。")
 
-        for waveform, speaker in self.diarization.generate("sample.mp3"):
-            text = self.__transcribe_audio(waveform, should_delete=False)
-            formatted = f"({speaker}) {text}"
-            self.logger.write(formatted)
+        for text in self.__transcribe_audio_with_diarization("cut_fixed.wav", should_delete=False):
+            self.logger.write(text)
         self.logger.write("サンプル音声の文字起こしが完了しました。")
     
     # 起動中かどうかを返す
@@ -81,14 +80,12 @@ class Whisper:
         audio_file = self.audio_queue.get(timeout=1)
         
         # 話者分離
-        for waveform, speaker in self.diarization.generate(audio_file):
-            text = self.__transcribe_audio(waveform)
-            formatted = f"({speaker}) {text}"
-            self.logger.write(formatted)
+        for text in self.__transcribe_audio_with_diarization(audio_file):
+            self.logger.write(text)
 
             # テキストをファイルに改行区切りで書き込み
             with open(self.output_file, 'a', encoding='utf-8') as f:
-                f.write(formatted + '\n')
+                f.write(text + '\n')
 
     # 音声を録音してファイルを次々と作成し、キューに追加していく
     def __capture_audio(self):
@@ -126,3 +123,23 @@ class Whisper:
             os.remove(audio_file)
         
         return text
+    
+    # 話者分離して文字起こしした結果をyieldする
+    def __transcribe_audio_with_diarization(self, audio_file, should_delete=True):
+        for waveform, speaker in self.diarization.generate(audio_file):
+            # 音声が無音の場合はスキップ
+            if self.__is_silent(waveform):
+                continue
+            text = self.__transcribe_audio(waveform, should_delete=False)
+            formatted = f"({speaker}) {text}"
+            yield formatted
+
+        # 読み取りが終わったら音声ファイルを削除
+        if should_delete and os.path.exists(audio_file):
+            os.remove(audio_file)
+
+    # 音声のエネルギーを計算し無音かどうかを判定する
+    def __is_silent(self, waveform, threshold=1e-4):
+        energy = np.mean(waveform**2)  # 振幅の二乗の平均（エネルギー）
+        self.logger.write(f"エネルギー: {energy} < {threshold}")
+        return energy < threshold 
